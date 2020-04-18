@@ -24,6 +24,11 @@ class NewsMailer(object):
         sender_login = os.environ.get('SMTP_LOGIN', sender_email)
         password = os.environ.get('SMTP_PASSWORD')
 
+        if date is None:
+            today = datetime.date.today()
+            yesterday = today - datetime.timedelta(days = 1)
+            date = str(yesterday)
+
         news_bucket = self._get_top_articles(config, store, date, top_list)
 
         for subject, articles in news_bucket.items():
@@ -37,7 +42,7 @@ class NewsMailer(object):
 
             article_text.append("")
             msg = MIMEText("\n".join(article_text))
-            msg['Subject'] = "Subject: {}".format(subject)
+            msg['Subject'] = "{} ({})".format(subject, date)
             msg['From'] = sender_email
             msg['To'] = receiver_email
 
@@ -51,11 +56,8 @@ class NewsMailer(object):
                 server.sendmail(msg['From'], msg['To'], msg.as_string())
 
 
-    def _get_top_articles(self, config, store, date=None, top_list=10):
+    def _get_top_articles(self, config, store, date, top_list=10):
         config = yaml.load(open(config), Loader=yaml.FullLoader)
-        # TODO: refactor this to yesterday after dev
-        if date is None:
-            date = "2020-04-18"
 
         store_path = "{}/{}".format(store, date)
         files = os.listdir(store_path)
