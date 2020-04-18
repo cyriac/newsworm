@@ -26,7 +26,14 @@ class NewsMailer(object):
         news_bucket = self._get_top_articles(config, store, date, top_list)
 
         for subject, articles in news_bucket.items():
-            article_text = ["", "Subject: {}".format(subject), ""]
+            article_text = [
+                "",
+                "Content-Type: text/html; charset=utf-8",
+                "Content-Disposition: inline",
+                "Content-Transfer-Encoding: 8bit",
+                "Subject: {}".format(subject),
+                ""
+            ]
 
             for t in articles:
                 article_text.append('-' * len(t['title']))
@@ -43,11 +50,12 @@ class NewsMailer(object):
 
             context = ssl.create_default_context()
             with smtplib.SMTP(smtp_server, port) as server:
-                server.ehlo()  # Can be omitted
+                print ("Sending email {} to {}".format(subject, receiver_email))
+                server.ehlo()
                 server.starttls(context=context)
-                server.ehlo()  # Can be omitted
+                server.ehlo()
                 server.login(sender_login, password)
-                server.sendmail(sender_email, receiver_email, message)
+                server.sendmail(sender_email, receiver_email, message.encode("utf8"))
 
 
     def _get_top_articles(self, config, store, date=None, top_list=10):
