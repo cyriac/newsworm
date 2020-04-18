@@ -8,7 +8,9 @@ import ujson as json
 
 from newsapi import NewsApiClient
 
+
 API_KEY = os.environ.get('NEWSAPI_KEY')
+
 
 class NewsCrawler(object):
     def get_news(self, config, store):
