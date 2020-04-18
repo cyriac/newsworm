@@ -1,6 +1,8 @@
 india_top_headlines:
+  title: "India headlines"
   method: get_top_headlines
   country: in
 us_top_headlines:
+  title: "US headlines"
   method: get_top_headlines
   country: us

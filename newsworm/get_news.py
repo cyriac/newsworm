@@ -18,7 +18,7 @@ class NewsCrawler(object):
         newsapi = NewsApiClient(api_key=API_KEY)
 
         for key, conf in config.items():
-            params = { k: v for k, v in conf.items() if k != 'method'}
+            params = { k: v for k, v in conf.items() if k not in ['method', 'title']}
             func = getattr(newsapi, conf['method'])
             data = func(**params)
             date = now.date().isoformat()
@@ -28,7 +28,7 @@ class NewsCrawler(object):
                 os.makedirs(store_path)
             except Exception:
                 pass
-            fname = "{}/{}-{}.json".format(store_path, timestamp, key)
+            fname = "{}/{}-{}.json".format(store_path, key, timestamp)
             with open(fname, "w", encoding="utf8") as file:
                 json.dump(data, file)
 
