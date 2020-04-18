@@ -4,6 +4,7 @@ import smtplib
 import ssl
 
 from collections import Counter
+from email.mime.text import MIMEText
 
 import fire
 import yaml
@@ -26,17 +27,8 @@ class NewsMailer(object):
         news_bucket = self._get_top_articles(config, store, date, top_list)
 
         for subject, articles in news_bucket.items():
-            article_text = [
-                "",
-                "Content-Type: text/html; charset=utf-8",
-                "Content-Disposition: inline",
-                "Content-Transfer-Encoding: 8bit",
-                "Subject: {}".format(subject),
-                ""
-            ]
-
+            article_text = []
             for t in articles:
-                article_text.append('-' * len(t['title']))
                 article_text.append(t['title'])
                 article_text.append('-' * len(t['title']))
                 article_text.append(t['description'])
@@ -44,9 +36,10 @@ class NewsMailer(object):
                 article_text.append("")
 
             article_text.append("")
-            message = "\n".join(article_text)
-
-            print (message)
+            msg = MIMEText("\n".join(article_text))
+            msg['Subject'] = "Subject: {}".format(subject)
+            msg['From'] = sender_email
+            msg['To'] = receiver_email
 
             context = ssl.create_default_context()
             with smtplib.SMTP(smtp_server, port) as server:
@@ -55,7 +48,7 @@ class NewsMailer(object):
                 server.starttls(context=context)
                 server.ehlo()
                 server.login(sender_login, password)
-                server.sendmail(sender_email, receiver_email, message.encode("utf8"))
+                server.sendmail(msg['From'], msg['To'], msg.as_string())
 
 
     def _get_top_articles(self, config, store, date=None, top_list=10):
