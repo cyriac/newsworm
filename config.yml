@@ -1,0 +1,6 @@
+india_top_headlines:
+  method: get_top_headlines
+  country: in
+us_top_headlines:
+  method: get_top_headlines
+  country: us
