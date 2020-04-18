@@ -15,8 +15,40 @@ API_KEY = os.environ.get('NEWSAPI_KEY')
 
 
 class NewsMailer(object):
-    def send_mails(self, config, store, date=None, top_list=10):
+    def send_mails(self, config, store, receiver_email, date=None, top_list=10):
+
+        port = os.environ.get('SMTP_PORT', 587)  # For starttls
+        smtp_server = os.environ.get('SMTP_SERVER')
+        sender_email = os.environ.get('SMTP_SENDER')
+        sender_login = os.environ.get('SMTP_LOGIN', sender_email)
+        password = os.environ.get('SMTP_PASSWORD')
+
         news_bucket = self._get_top_articles(config, store, date, top_list)
+
+        for subject, articles in news_bucket.items():
+            article_text = ["", "Subject: {}".format(subject), ""]
+
+            for t in articles:
+                article_text.append('-' * len(t['title']))
+                article_text.append(t['title'])
+                article_text.append('-' * len(t['title']))
+                article_text.append(t['description'])
+                article_text.append(t['url'])
+                article_text.append("")
+
+            article_text.append("")
+            message = "\n".join(article_text)
+
+            print (message)
+
+            context = ssl.create_default_context()
+            with smtplib.SMTP(smtp_server, port) as server:
+                server.ehlo()  # Can be omitted
+                server.starttls(context=context)
+                server.ehlo()  # Can be omitted
+                server.login(sender_login, password)
+                server.sendmail(sender_email, receiver_email, message)
+
 
     def _get_top_articles(self, config, store, date=None, top_list=10):
         config = yaml.load(open(config), Loader=yaml.FullLoader)
@@ -30,7 +62,6 @@ class NewsMailer(object):
         news_bucket = {}
 
         for key, conf in config.items():
-            news_bucket = {}
             news_files = [
                 "{}/{}".format(store_path, f)
                 for f in (os.listdir(store_path))
@@ -51,14 +82,6 @@ class NewsMailer(object):
 
             news_bucket[conf['title']] = top_articles
 
-            print ("")
-            print (conf['title'])
-            print("=============")
-            for t in top_articles:
-                print (t['title'])
-                print (t['description'])
-                print (t['url'])
-                print ('---------------')
         return news_bucket
 
 if __name__ == '__main__':
