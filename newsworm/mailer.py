@@ -75,7 +75,10 @@ class NewsMailer(object):
             article_urls = []
 
             for nf in news_files:
-                nf_articles = json.load(open(nf))['articles']
+                try:
+                    nf_articles = json.load(open(nf))['articles']
+                except ValueError:
+                    continue
                 for article in nf_articles:
                     articles_pool[article['url']] = article
                 article_urls.extend([n['url'] for n in nf_articles])
