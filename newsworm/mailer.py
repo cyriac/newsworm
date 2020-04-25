@@ -55,6 +55,19 @@ class NewsMailer(object):
                 server.login(sender_login, password)
                 server.sendmail(msg['From'], msg['To'], msg.as_string())
 
+    def archive(self, config, store, date=None, top_list=10):
+        if date is None:
+            today = datetime.date.today()
+            yesterday = today - datetime.timedelta(days = 1)
+            date = str(yesterday)
+
+        news_bucket = self._get_top_articles(config, store, date, top_list)
+
+        store_path = "{}/{}".format(store, date)
+
+        with open("{}/archive.json".format(store_path), "w") as file:
+            json.dump(news_bucket, file)
+
 
     def _get_top_articles(self, config, store, date, top_list=10):
         config = yaml.load(open(config), Loader=yaml.FullLoader)

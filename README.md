@@ -18,3 +18,8 @@ python newsworm/get_news.py get_news ./config.yml ./data
 ```
 python newsworm/mailer.py send_mails ./config.yml ./data email@example.com
 ```
+
+### Create archive
+```
+python newsroom/mailer.py archive ./config.yml ./data
+```
